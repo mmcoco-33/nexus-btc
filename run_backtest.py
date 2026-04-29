@@ -1,6 +1,7 @@
 """バックテスト実行スクリプト"""
 import json
 import os
+import pandas as pd
 from datetime import datetime
 
 from src.api.gmo_client import GMOClient
@@ -55,7 +56,6 @@ def main():
             p = 0.5
         probas.append(p)
 
-    import pandas as pd
     test_df = test_df.copy()
     test_df["proba"] = probas
 
@@ -104,5 +104,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import pandas as pd
     main()

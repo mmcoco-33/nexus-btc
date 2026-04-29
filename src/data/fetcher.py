@@ -21,8 +21,13 @@ class DataFetcher:
                     raw = resp.get("data")
                     if isinstance(raw, dict):
                         raw = raw.get("list", [])
-                    if raw:
-                        frames.append(self._parse(raw))
+                    if raw and isinstance(raw, list):
+                        try:
+                            parsed = self._parse(raw)
+                            if not parsed.empty:
+                                frames.append(parsed)
+                        except Exception as pe:
+                            print(f"[fetcher] parse error date={date}: {pe}")
                 time.sleep(0.3)
             except Exception as e:
                 print(f"[fetcher] date={date} error={e}")
@@ -43,12 +48,24 @@ class DataFetcher:
     def _parse(self, data: list) -> pd.DataFrame:
         rows = []
         for d in data:
-            rows.append({
-                "timestamp": pd.to_datetime(int(d[0]), unit="ms"),
-                "open":   float(d[1]),
-                "high":   float(d[2]),
-                "low":    float(d[3]),
-                "close":  float(d[4]),
-                "volume": float(d[5]),
-            })
+            # GMOコインAPIのklines形式: {"openTime": "...", "open": "...", ...}
+            if isinstance(d, dict):
+                rows.append({
+                    "timestamp": pd.to_datetime(int(d["openTime"]), unit="ms"),
+                    "open":   float(d["open"]),
+                    "high":   float(d["high"]),
+                    "low":    float(d["low"]),
+                    "close":  float(d["close"]),
+                    "volume": float(d["volume"]),
+                })
+            else:
+                # 旧形式（配列）のフォールバック
+                rows.append({
+                    "timestamp": pd.to_datetime(int(d[0]), unit="ms"),
+                    "open":   float(d[1]),
+                    "high":   float(d[2]),
+                    "low":    float(d[3]),
+                    "close":  float(d[4]),
+                    "volume": float(d[5]),
+                })
         return pd.DataFrame(rows)

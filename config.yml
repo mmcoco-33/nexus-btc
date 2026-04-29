@@ -6,13 +6,13 @@ trading:
   max_position: 1           # 最大ポジション数
 
 risk:
-  stop_loss_pct: 0.03       # 損切り3%
-  take_profit_pct: 0.06     # 利確6%
-  max_daily_loss_pct: 0.05  # 日次最大損失5%
+  atr_mult: 2.0            # ATR × 2.0 で損切りライン
+  trail_pct: 0.03          # トレーリングストップ3%
+  max_daily_loss_pct: 0.05 # 日次最大損失5%
 
 model:
   retrain_interval_hours: 24  # 24時間ごとに再学習
-  signal_threshold: 0.60      # 60%以上の確信度で発注
+  signal_threshold: 0.38      # 38%以上の確信度で発注（押し目買い特化）
 
 notification:
   line_enabled: false         # LINE通知（トークン設定後にtrue）

@@ -1,0 +1,13 @@
+{
+  "total_return_pct": 0.1,
+  "buy_hold_pct": 15.62,
+  "alpha_pct": -15.52,
+  "sharpe": 3.691,
+  "max_drawdown_pct": 0.0,
+  "win_rate_pct": 100.0,
+  "total_trades": 1,
+  "final_capital": 100104.0,
+  "timestamp": "2026-04-29T16:14:20.813088",
+  "train_size": 1305,
+  "test_size": 644
+}

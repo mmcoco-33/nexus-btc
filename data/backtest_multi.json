@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-04-29T16:28:17.649488",
+  "train_size": 2860,
+  "test_size": 1226,
+  "buy_hold_pct": 16.57,
+  "patterns": [
+    {
+      "name": "í¥êœã…(30%)",
+      "buy": 0.3,
+      "sell": 0.7,
+      "total_return_pct": 1.84,
+      "buy_hold_pct": 16.57,
+      "alpha_pct": -14.74,
+      "sharpe": 1.708,
+      "max_drawdown_pct": -1.85,
+      "win_rate_pct": 48.0,
+      "total_trades": 25,
+      "final_capital": 101836.0
+    },
+    {
+      "name": "êœã…(40%)",
+      "buy": 0.4,
+      "sell": 0.6,
+      "total_return_pct": 1.47,
+      "buy_hold_pct": 16.57,
+      "alpha_pct": -15.11,
+      "sharpe": 4.843,
+      "max_drawdown_pct": -0.0,
+      "win_rate_pct": 80.0,
+      "total_trades": 5,
+      "final_capital": 101465.0
+    },
+    {
+      "name": "íÜä‘(45%)",
+      "buy": 0.45,
+      "sell": 0.55,
+      "total_return_pct": 0.11,
+      "buy_hold_pct": 16.57,
+      "alpha_pct": -16.46,
+      "sharpe": 2.674,
+      "max_drawdown_pct": 0.0,
+      "win_rate_pct": 50.0,
+      "total_trades": 2,
+      "final_capital": 100115.0
+    },
+    {
+      "name": "ïWèÄ(50%)",
+      "buy": 0.5,
+      "sell": 0.5,
+      "total_return_pct": 0.0,
+      "buy_hold_pct": 16.57,
+      "alpha_pct": -16.57,
+      "sharpe": 0,
+      "max_drawdown_pct": 0.0,
+      "win_rate_pct": 0,
+      "total_trades": 0,
+      "final_capital": 100000
+    },
+    {
+      "name": "ï€éÁ(55%)",
+      "buy": 0.55,
+      "sell": 0.45,
+      "total_return_pct": 0.0,
+      "buy_hold_pct": 16.57,
+      "alpha_pct": -16.57,
+      "sharpe": 0,
+      "max_drawdown_pct": 0.0,
+      "win_rate_pct": 0,
+      "total_trades": 0,
+      "final_capital": 100000
+    },
+    {
+      "name": "åªçs(60%)",
+      "buy": 0.6,
+      "sell": 0.4,
+      "total_return_pct": 0.0,
+      "buy_hold_pct": 16.57,
+      "alpha_pct": -16.57,
+      "sharpe": 0,
+      "max_drawdown_pct": 0.0,
+      "win_rate_pct": 0,
+      "total_trades": 0,
+      "final_capital": 100000
+    }
+  ],
+  "best_pattern": "í¥êœã…(30%)"
+}

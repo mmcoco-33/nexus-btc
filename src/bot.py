@@ -1,4 +1,4 @@
-"""NEXUS-BTC メインBot"""
+"""NEXUS-BTC メインBot（全要素統合版）"""
 import json
 import os
 import yaml
@@ -18,7 +18,6 @@ def load_config() -> dict:
 
 
 def save_results(entry: dict):
-    """GitHub Pages用にJSONへ結果を追記"""
     os.makedirs("data", exist_ok=True)
     path = "data/results.json"
     results = []
@@ -26,13 +25,13 @@ def save_results(entry: dict):
         with open(path) as f:
             results = json.load(f)
     results.append(entry)
-    results = results[-500:]  # 直近500件のみ保持
+    results = results[-500:]
     with open(path, "w") as f:
         json.dump(results, f, ensure_ascii=False, default=str)
 
 
 def run():
-    cfg = load_config()
+    cfg   = load_config()
     t_cfg = cfg["trading"]
     r_cfg = cfg["risk"]
     m_cfg = cfg["model"]
@@ -44,50 +43,50 @@ def run():
     fetcher = DataFetcher(client)
     model   = NexusEnsemble()
     risk    = RiskManager(
-        stop_loss_pct=r_cfg["stop_loss_pct"],
-        take_profit_pct=r_cfg["take_profit_pct"],
+        atr_mult=r_cfg.get("atr_mult", 2.0),
+        trail_pct=r_cfg.get("trail_pct", 0.03),
         max_daily_loss_pct=r_cfg["max_daily_loss_pct"],
     )
+    gen = SignalGenerator(model, threshold=m_cfg["signal_threshold"])
 
     print(f"[{datetime.now()}] NEXUS-BTC 起動")
 
-    # データ取得・特徴量生成（1時間足 + 4時間足）
+    # データ取得・特徴量生成
     symbol = t_cfg["symbol"].replace("_JPY", "")
     try:
-        raw_1h, raw_4h = fetcher.fetch_multi_timeframe(symbol=symbol, days_1h=60, days_4h=120)
-        df = add_features(raw_1h, df_4h=raw_4h)
+        df_1h, df_4h = fetcher.fetch_multi_timeframe(symbol=symbol, days_1h=60, days_4h=120)
+        df = add_features(df_1h, df_4h=df_4h)
     except Exception:
-        # 4時間足が取れない場合は1時間足のみで続行
-        raw_1h = fetcher.fetch_ohlcv(symbol=symbol, interval="1hour", days=60)
-        df = add_features(raw_1h)
+        df_1h = fetcher.fetch_ohlcv(symbol=symbol, interval="1hour", days=60)
+        df = add_features(df_1h)
 
-    # モデル学習（初回 or 再学習タイミング）
-    retrain_flag = "models/xgb.pkl"
-    if not os.path.exists(retrain_flag):
+    # モデル学習 or ロード
+    if not os.path.exists("models/xgb.pkl"):
         print("モデル学習中...")
         model.train(df)
     else:
         model._load()
 
     # シグナル生成
-    gen = SignalGenerator(model, threshold=m_cfg["signal_threshold"])
     signal = gen.get_signal(df)
     print(f"シグナル: {signal}")
 
     current_price = signal["price"]
-    action = signal["action"]
+    current_atr   = float(df["atr"].iloc[-1]) if "atr" in df.columns else current_price * 0.01
+    action        = signal["action"]
+
     log_entry = {
-        "timestamp": datetime.now().isoformat(),
-        "price": current_price,
-        "action": action,
+        "timestamp":  datetime.now().isoformat(),
+        "price":      current_price,
+        "action":     action,
         "confidence": signal["confidence"],
-        "executed": False,
-        "reason": "",
+        "reason":     signal["reason"],
+        "executed":   False,
     }
 
     # ポジション確認
     has_position = False
-    position_id = None
+    position_id  = None
     if api_key:
         try:
             pos_resp = client.get_positions(t_cfg["symbol"])
@@ -98,20 +97,20 @@ def run():
         except Exception as e:
             print(f"ポジション取得エラー: {e}")
 
-    # 損切り・利確チェック
+    # トレーリングストップ更新 & 損切り確認
     if has_position:
-        if risk.should_stop_loss(current_price):
+        risk.update_peak(current_price)
+        should_exit, exit_reason = risk.should_exit(current_price)
+        if should_exit:
             action = "SELL"
-            log_entry["reason"] = "stop_loss"
-        elif risk.should_take_profit(current_price):
-            action = "SELL"
-            log_entry["reason"] = "take_profit"
+            log_entry["reason"] = exit_reason
+            print(f"エグジット判定: {exit_reason} @ {current_price}")
 
-    # 残高チェック
+    # 残高取得
     balance = 0
     if api_key:
         try:
-            margin = client.get_account_margin()
+            margin  = client.get_account_margin()
             balance = float(margin["data"]["availableAmount"])
         except Exception as e:
             print(f"残高取得エラー: {e}")
@@ -123,22 +122,22 @@ def run():
         if action == "BUY" and not has_position and risk.can_trade(balance):
             try:
                 client.place_order(t_cfg["symbol"], "BUY", size)
-                risk.set_entry(current_price)
+                risk.set_entry(current_price, current_atr)
                 log_entry["executed"] = True
-                print(f"BUY注文執行: {size} BTC @ {current_price}")
+                print(f"BUY注文: {size} BTC @ ¥{current_price:,.0f}  ATR={current_atr:,.0f}")
             except Exception as e:
                 print(f"注文エラー: {e}")
 
         elif action == "SELL" and has_position and position_id:
             try:
                 client.close_position(t_cfg["symbol"], position_id, "SELL", size)
-                risk.clear_entry()
+                risk.clear_position()
                 log_entry["executed"] = True
-                print(f"SELL注文執行: {size} BTC @ {current_price}")
+                print(f"SELL注文: {size} BTC @ ¥{current_price:,.0f}")
             except Exception as e:
                 print(f"決済エラー: {e}")
     else:
-        log_entry["reason"] = "dry_run（APIキー未設定）"
+        log_entry["reason"] += " | dry_run"
         print("ドライラン: 注文は執行されません")
 
     save_results(log_entry)

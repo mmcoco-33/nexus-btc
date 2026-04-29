@@ -1,0 +1,106 @@
+{
+  "total_return_pct": 7.36,
+  "buy_hold_pct": 16.58,
+  "alpha_pct": -9.22,
+  "sharpe": 1.817,
+  "max_drawdown_pct": -9.49,
+  "win_rate_pct": 55.6,
+  "total_trades": 9,
+  "avg_win_pct": 2.85,
+  "avg_lose_pct": -1.69,
+  "profit_factor": 2.04,
+  "final_capital": 107363.0,
+  "trades": [
+    {
+      "entry_time": "2026-03-09 14:00:00",
+      "exit_time": "2026-03-13 09:00:00",
+      "entry_price": 10955275.0,
+      "exit_price": 11506900.0,
+      "pnl_jpy": 5035.0,
+      "pnl_pct": 5.04,
+      "reason": "利確",
+      "result": "WIN"
+    },
+    {
+      "entry_time": "2026-03-13 14:00:00",
+      "exit_time": "2026-03-18 20:00:00",
+      "entry_price": 11551121.0,
+      "exit_price": 11398298.0,
+      "pnl_jpy": -1390.0,
+      "pnl_pct": -1.32,
+      "reason": "シグナル反転",
+      "result": "LOSE"
+    },
+    {
+      "entry_time": "2026-03-23 17:00:00",
+      "exit_time": "2026-03-26 12:00:00",
+      "entry_price": 11258704.0,
+      "exit_price": 11097703.0,
+      "pnl_jpy": -1482.0,
+      "pnl_pct": -1.43,
+      "reason": "シグナル反転",
+      "result": "LOSE"
+    },
+    {
+      "entry_time": "2026-04-01 05:00:00",
+      "exit_time": "2026-04-02 04:00:00",
+      "entry_price": 10877094.0,
+      "exit_price": 10585679.0,
+      "pnl_jpy": -2737.0,
+      "pnl_pct": -2.68,
+      "reason": "損切り",
+      "result": "LOSE"
+    },
+    {
+      "entry_time": "2026-04-05 18:00:00",
+      "exit_time": "2026-04-07 22:00:00",
+      "entry_price": 10771540.0,
+      "exit_price": 11359949.0,
+      "pnl_jpy": 5431.0,
+      "pnl_pct": 5.46,
+      "reason": "利確",
+      "result": "WIN"
+    },
+    {
+      "entry_time": "2026-04-07 22:00:00",
+      "exit_time": "2026-04-12 10:00:00",
+      "entry_price": 11359949.0,
+      "exit_price": 11392491.0,
+      "pnl_jpy": 300.0,
+      "pnl_pct": 0.29,
+      "reason": "シグナル反転",
+      "result": "WIN"
+    },
+    {
+      "entry_time": "2026-04-13 23:00:00",
+      "exit_time": "2026-04-19 02:00:00",
+      "entry_price": 11853421.0,
+      "exit_price": 11998560.0,
+      "pnl_jpy": 1288.0,
+      "pnl_pct": 1.22,
+      "reason": "シグナル反転",
+      "result": "WIN"
+    },
+    {
+      "entry_time": "2026-04-20 19:00:00",
+      "exit_time": "2026-04-25 03:00:00",
+      "entry_price": 12127615.0,
+      "exit_price": 12400006.0,
+      "pnl_jpy": 2391.0,
+      "pnl_pct": 2.25,
+      "reason": "シグナル反転",
+      "result": "WIN"
+    },
+    {
+      "entry_time": "2026-04-26 10:00:00",
+      "exit_time": "2026-04-27 20:00:00",
+      "entry_price": 12449191.0,
+      "exit_price": 12280693.0,
+      "pnl_jpy": -1473.0,
+      "pnl_pct": -1.35,
+      "reason": "シグナル反転",
+      "result": "LOSE"
+    }
+  ],
+  "timestamp": "2026-04-29T17:02:21.150472"
+}
