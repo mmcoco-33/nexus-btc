@@ -1,0 +1,66 @@
+name: NEXUS-BTC Auto Trade
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # 毎時0分に実行
+  workflow_dispatch:        # 手動実行も可能
+
+permissions:
+  contents: write           # gh-pagesへのpushに必要
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore models cache
+        uses: actions/cache@v4
+        with:
+          path: models/
+          key: nexus-models-${{ github.run_number }}
+          restore-keys: nexus-models-
+
+      - name: Run Bot
+        env:
+          GMO_API_KEY: ${{ secrets.GMO_API_KEY }}
+          GMO_API_SECRET: ${{ secrets.GMO_API_SECRET }}
+        run: python -m src.bot
+
+      - name: Save models cache
+        uses: actions/cache@v4
+        with:
+          path: models/
+          key: nexus-models-${{ github.run_number }}
+
+      - name: Deploy dashboard to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dashboard
+          keep_files: true
+
+      - name: Copy results.json to Pages
+        run: |
+          git config user.name "nexus-bot"
+          git config user.email "bot@nexus"
+          git fetch origin gh-pages
+          git checkout gh-pages
+          cp data/results.json results.json 2>/dev/null || true
+          git add results.json
+          git diff --staged --quiet || git commit -m "update results"
+          git push origin gh-pages

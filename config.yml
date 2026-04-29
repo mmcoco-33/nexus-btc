@@ -1,0 +1,18 @@
+trading:
+  symbol: "BTC_JPY"
+  interval: "1hour"         # 1時間足
+  lookback_candles: 200     # 学習に使う過去足数
+  trade_amount_jpy: 10000   # 1回の注文金額（円）
+  max_position: 1           # 最大ポジション数
+
+risk:
+  stop_loss_pct: 0.03       # 損切り3%
+  take_profit_pct: 0.06     # 利確6%
+  max_daily_loss_pct: 0.05  # 日次最大損失5%
+
+model:
+  retrain_interval_hours: 24  # 24時間ごとに再学習
+  signal_threshold: 0.60      # 60%以上の確信度で発注
+
+notification:
+  line_enabled: false         # LINE通知（トークン設定後にtrue）

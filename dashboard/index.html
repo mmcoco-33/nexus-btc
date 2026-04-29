@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS-BTC Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+    h1 { color: #58a6ff; margin-bottom: 20px; font-size: 1.4rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; }
+    .card .label { font-size: 0.75rem; color: #8b949e; margin-bottom: 6px; }
+    .card .value { font-size: 1.4rem; font-weight: bold; }
+    .buy  { color: #3fb950; }
+    .sell { color: #f85149; }
+    .hold { color: #d29922; }
+    .chart-wrap { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #21262d; }
+    th { color: #8b949e; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+    .tag.BUY  { background: #1a3a2a; color: #3fb950; }
+    .tag.SELL { background: #3a1a1a; color: #f85149; }
+    .tag.HOLD { background: #2a2a1a; color: #d29922; }
+  </style>
+</head>
+<body>
+  <h1>⚡ NEXUS-BTC Dashboard</h1>
+
+  <div class="grid">
+    <div class="card"><div class="label">現在価格</div><div class="value" id="price">--</div></div>
+    <div class="card"><div class="label">最新シグナル</div><div class="value" id="signal">--</div></div>
+    <div class="card"><div class="label">確信度</div><div class="value" id="confidence">--</div></div>
+    <div class="card"><div class="label">総取引回数</div><div class="value" id="total">--</div></div>
+    <div class="card"><div class="label">最終更新</div><div class="value" style="font-size:0.9rem" id="updated">--</div></div>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="priceChart" height="80"></canvas>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="confChart" height="60"></canvas>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead><tr><th>時刻</th><th>価格</th><th>シグナル</th><th>確信度</th><th>執行</th></tr></thead>
+      <tbody id="log"></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function load() {
+      const res = await fetch('results.json?t=' + Date.now());
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.length) return;
+
+      const latest = data[data.length - 1];
+      document.getElementById('price').textContent = '¥' + Number(latest.price).toLocaleString();
+      const sig = latest.action;
+      document.getElementById('signal').innerHTML = `<span class="${sig}">${sig}</span>`;
+      document.getElementById('confidence').textContent = (latest.confidence * 100).toFixed(1) + '%';
+      document.getElementById('total').textContent = data.length;
+      document.getElementById('updated').textContent = new Date(latest.timestamp).toLocaleString('ja-JP');
+
+      const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}));
+      const prices = data.map(d => d.price);
+      const confs  = data.map(d => (d.confidence * 100).toFixed(1));
+
+      // 価格チャート
+      new Chart(document.getElementById('priceChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'BTC価格 (JPY)',
+            data: prices,
+            borderColor: '#58a6ff',
+            backgroundColor: 'rgba(88,166,255,0.08)',
+            borderWidth: 1.5,
+            pointRadius: 2,
+            tension: 0.3,
+          }]
+        },
+        options: { plugins: { legend: { labels: { color: '#e6edf3' } } }, scales: { x: { ticks: { color: '#8b949e', maxTicksLimit: 10 } }, y: { ticks: { color: '#8b949e' } } } }
+      });
+
+      // 確信度チャート
+      new Chart(document.getElementById('confChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: '買い確信度 (%)',
+            data: confs,
+            backgroundColor: confs.map(v => v >= 60 ? 'rgba(63,185,80,0.6)' : v <= 40 ? 'rgba(248,81,73,0.6)' : 'rgba(210,153,34,0.6)'),
+          }]
+        },
+        options: { plugins: { legend: { labels: { color: '#e6edf3' } } }, scales: { x: { ticks: { color: '#8b949e', maxTicksLimit: 10 } }, y: { ticks: { color: '#8b949e' }, min: 0, max: 100 } } }
+      });
+
+      // ログテーブル
+      const tbody = document.getElementById('log');
+      [...data].reverse().slice(0, 50).forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${new Date(d.timestamp).toLocaleString('ja-JP')}</td>
+          <td>¥${Number(d.price).toLocaleString()}</td>
+          <td><span class="tag ${d.action}">${d.action}</span></td>
+          <td>${(d.confidence * 100).toFixed(1)}%</td>
+          <td>${d.executed ? '✅' : '−'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    load();
+    setInterval(load, 60000); // 1分ごとに自動更新
+  </script>
+</body>
+</html>
