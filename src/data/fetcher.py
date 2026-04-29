@@ -16,10 +16,17 @@ class DataFetcher:
             date = (datetime.now() - timedelta(days=i)).strftime("%Y%m%d")
             try:
                 resp = self.client.get_klines(symbol=symbol, interval=interval, date=date)
-                if resp.get("status") == 0 and resp.get("data"):
-                    frames.append(self._parse(resp["data"]))
+                print(f"[fetcher] date={date} status={resp.get('status')} keys={list(resp.get('data', {}).keys()) if isinstance(resp.get('data'), dict) else type(resp.get('data'))}")
+                if resp.get("status") == 0:
+                    raw = resp.get("data")
+                    # GMOコインAPIは data がリストの場合と {"list": [...]} の場合がある
+                    if isinstance(raw, dict):
+                        raw = raw.get("list", [])
+                    if raw:
+                        frames.append(self._parse(raw))
                 time.sleep(0.3)  # レート制限対策
-            except Exception:
+            except Exception as e:
+                print(f"[fetcher] date={date} error={e}")
                 continue
 
         if not frames:
@@ -31,12 +38,14 @@ class DataFetcher:
     def _parse(self, data: list) -> pd.DataFrame:
         rows = []
         for d in data:
+            # GMOコインのklines: [openTime, open, high, low, close, volume]
+            # openTimeはミリ秒のUnixタイムスタンプ（文字列の場合あり）
             rows.append({
-                "timestamp": pd.to_datetime(d[0], unit="ms"),
-                "open":  float(d[1]),
-                "high":  float(d[2]),
-                "low":   float(d[3]),
-                "close": float(d[4]),
+                "timestamp": pd.to_datetime(int(d[0]), unit="ms"),
+                "open":   float(d[1]),
+                "high":   float(d[2]),
+                "low":    float(d[3]),
+                "close":  float(d[4]),
                 "volume": float(d[5]),
             })
         return pd.DataFrame(rows)
