@@ -139,7 +139,9 @@ def run():
 
     # 注文執行
     if api_key and balance > 0:
-        size = str(round(t_cfg["trade_amount_jpy"] / current_price, 6))
+        pos_pct  = t_cfg.get("position_size_pct", 0.20)
+        order_jpy = balance * pos_pct          # 残高の20%
+        size = str(round(order_jpy / current_price, 6))
 
         if action == "BUY" and not has_position and risk.can_trade(balance):
             try:

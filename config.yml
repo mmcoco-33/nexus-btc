@@ -1,9 +1,9 @@
 trading:
   symbol: "BTC_JPY"
-  interval: "1hour"         # 1時間足
-  lookback_candles: 200     # 学習に使う過去足数
-  trade_amount_jpy: 10000   # 1回の注文金額（円）
-  max_position: 1           # 最大ポジション数
+  interval: "1hour"
+  lookback_candles: 200
+  position_size_pct: 0.20   # 残高の20%を1回の注文に使用（複利運用）
+  max_position: 1
 
 risk:
   atr_mult: 2.0            # ATR × 2.0 で損切りライン
