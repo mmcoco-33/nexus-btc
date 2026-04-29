@@ -1,0 +1,44 @@
+name: NEXUS-BTC Backtest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run backtest
+        env:
+          GMO_API_KEY: ${{ secrets.GMO_API_KEY }}
+          GMO_API_SECRET: ${{ secrets.GMO_API_SECRET }}
+        run: python run_backtest.py
+
+      - name: Push backtest results
+        run: |
+          git config user.name "nexus-bot"
+          git config user.email "bot@nexus"
+          git add data/backtest_result.json results.json
+          git diff --staged --quiet || git commit -m "backtest: update results"
+          git push origin main
