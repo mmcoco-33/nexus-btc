@@ -7,9 +7,34 @@ from datetime import datetime
 from src.api.gmo_client import GMOClient
 from src.data.fetcher import DataFetcher
 from src.features.engineer import add_features
-from src.models.ensemble import NexusEnsemble
 from src.strategy.signal import SignalGenerator
 from src.risk.manager import RiskManager
+
+FEATURE_COLS = [
+    "ema_9", "ema_21", "ema_50", "ema_200",
+    "macd", "macd_signal", "macd_diff", "adx", "adx_pos", "adx_neg",
+    "rsi_14", "rsi_7", "bb_width", "bb_pct", "atr_pct",
+    "vwap_dist", "vol_ratio",
+    "ret_1", "ret_3", "ret_6", "ret_24",
+    "ema_cross_9_21", "ema_cross_21_50", "price_vs_ema50", "price_vs_ema200",
+    "hour_sin", "hour_cos", "dow_sin", "dow_cos", "vol_regime",
+]
+
+
+class LightModel:
+    """XGBoostのみの軽量モデル（torch不要）"""
+    def predict_proba(self, df) -> float:
+        import pickle
+        try:
+            with open("models/xgb.pkl", "rb") as f:
+                xgb = pickle.load(f)
+            with open("models/scaler.pkl", "rb") as f:
+                scaler = pickle.load(f)
+            cols = [c for c in FEATURE_COLS if c in df.columns]
+            X_s  = scaler.transform(df[cols].values[-1:])
+            return xgb.predict_proba(X_s)[0, 1]
+        except Exception:
+            return 0.5
 
 
 def load_config() -> dict:
@@ -41,7 +66,7 @@ def run():
 
     client  = GMOClient(api_key, api_secret)
     fetcher = DataFetcher(client)
-    model   = NexusEnsemble()
+    model   = LightModel()
     risk    = RiskManager(
         atr_mult=r_cfg.get("atr_mult", 2.0),
         trail_pct=r_cfg.get("trail_pct", 0.03),
@@ -60,12 +85,9 @@ def run():
         df_1h = fetcher.fetch_ohlcv(symbol=symbol, interval="1hour", days=60)
         df = add_features(df_1h)
 
-    # モデル学習 or ロード
+    # モデルロード（retrainワークフローが毎日更新）
     if not os.path.exists("models/xgb.pkl"):
-        print("モデル学習中...")
-        model.train(df)
-    else:
-        model._load()
+        print("モデルファイルなし → ドライラン継続")
 
     # シグナル生成
     signal = gen.get_signal(df)
