@@ -22,6 +22,7 @@ from sklearn.preprocessing import StandardScaler
 API_KEY    = os.environ.get("GMO_API_KEY", "")
 API_SECRET = os.environ.get("GMO_API_SECRET", "")
 INITIAL    = 100_000
+FEE_RATE   = 0.0005  # GMOコイン 成行手数料 0.05%（片道）
 
 FEATURE_COLS = [
     "ema_9", "ema_21", "ema_50", "ema_200",

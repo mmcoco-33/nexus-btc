@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-04-29T22:11:39.131504",
+  "1hour": {
+    "total_return_pct": 11.58,
+    "profit_jpy": 11583.0,
+    "final_capital": 111583.0,
+    "buy_hold_pct": 20.06,
+    "alpha_pct": -8.48,
+    "sharpe": 2.506,
+    "max_drawdown_pct": -6.05,
+    "profit_factor": 2.46,
+    "total_trades": 11,
+    "win_rate_pct": 54.5,
+    "avg_win_pct": 3.38,
+    "avg_lose_pct": -1.56,
+    "avg_hold_candles": 136.5
+  },
+  "1day": {
+    "total_return_pct": 0.0,
+    "profit_jpy": 0,
+    "final_capital": 100000,
+    "buy_hold_pct": 16.24,
+    "alpha_pct": -16.24,
+    "sharpe": 0,
+    "max_drawdown_pct": 0.0,
+    "profit_factor": Infinity,
+    "total_trades": 0,
+    "win_rate_pct": 0,
+    "avg_win_pct": 0,
+    "avg_lose_pct": 0,
+    "avg_hold_candles": 0
+  },
+  "winner": "1ŽžŠÔ‘«"
+}

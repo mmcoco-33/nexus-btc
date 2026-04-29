@@ -19,7 +19,7 @@ def add_features(df: pd.DataFrame, df_4h: pd.DataFrame = None) -> pd.DataFrame:
     df["ema_9"]       = ta.trend.ema_indicator(c, window=9)
     df["ema_21"]      = ta.trend.ema_indicator(c, window=21)
     df["ema_50"]      = ta.trend.ema_indicator(c, window=50)
-    df["ema_200"]     = ta.trend.ema_indicator(c, window=200)
+    df["ema_200"]     = ta.trend.ema_indicator(c, window=200).ffill()
     df["macd"]        = ta.trend.macd(c)
     df["macd_signal"] = ta.trend.macd_signal(c)
     df["macd_diff"]   = ta.trend.macd_diff(c)
@@ -95,4 +95,4 @@ def add_features(df: pd.DataFrame, df_4h: pd.DataFrame = None) -> pd.DataFrame:
     future_ret = c.shift(-LABEL_HORIZON) / c - 1
     df["target"] = (future_ret >= LABEL_THRESHOLD).astype(int)
 
-    return df.dropna()
+    return df.dropna(subset=[c for c in df.columns if c not in ["target", "timestamp"]], how="all")
