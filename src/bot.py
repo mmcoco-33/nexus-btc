@@ -51,13 +51,15 @@ def run():
 
     print(f"[{datetime.now()}] NEXUS-BTC 起動")
 
-    # データ取得・特徴量生成
-    raw_df = fetcher.fetch_ohlcv(
-        symbol=t_cfg["symbol"].replace("_JPY", ""),
-        interval=t_cfg["interval"],
-        days=60,
-    )
-    df = add_features(raw_df)
+    # データ取得・特徴量生成（1時間足 + 4時間足）
+    symbol = t_cfg["symbol"].replace("_JPY", "")
+    try:
+        raw_1h, raw_4h = fetcher.fetch_multi_timeframe(symbol=symbol, days_1h=60, days_4h=120)
+        df = add_features(raw_1h, df_4h=raw_4h)
+    except Exception:
+        # 4時間足が取れない場合は1時間足のみで続行
+        raw_1h = fetcher.fetch_ohlcv(symbol=symbol, interval="1hour", days=60)
+        df = add_features(raw_1h)
 
     # モデル学習（初回 or 再学習タイミング）
     retrain_flag = "models/xgb.pkl"

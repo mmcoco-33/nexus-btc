@@ -19,12 +19,11 @@ class DataFetcher:
                 print(f"[fetcher] date={date} status={resp.get('status')} keys={list(resp.get('data', {}).keys()) if isinstance(resp.get('data'), dict) else type(resp.get('data'))}")
                 if resp.get("status") == 0:
                     raw = resp.get("data")
-                    # GMOコインAPIは data がリストの場合と {"list": [...]} の場合がある
                     if isinstance(raw, dict):
                         raw = raw.get("list", [])
                     if raw:
                         frames.append(self._parse(raw))
-                time.sleep(0.3)  # レート制限対策
+                time.sleep(0.3)
             except Exception as e:
                 print(f"[fetcher] date={date} error={e}")
                 continue
@@ -35,11 +34,15 @@ class DataFetcher:
         df = pd.concat(frames).drop_duplicates("timestamp").sort_values("timestamp").reset_index(drop=True)
         return df
 
+    def fetch_multi_timeframe(self, symbol: str = "BTC", days_1h: int = 60, days_4h: int = 120) -> tuple:
+        """1時間足と4時間足を両方取得して返す"""
+        df_1h = self.fetch_ohlcv(symbol=symbol, interval="1hour", days=days_1h)
+        df_4h = self.fetch_ohlcv(symbol=symbol, interval="4hour", days=days_4h)
+        return df_1h, df_4h
+
     def _parse(self, data: list) -> pd.DataFrame:
         rows = []
         for d in data:
-            # GMOコインのklines: [openTime, open, high, low, close, volume]
-            # openTimeはミリ秒のUnixタイムスタンプ（文字列の場合あり）
             rows.append({
                 "timestamp": pd.to_datetime(int(d[0]), unit="ms"),
                 "open":   float(d[1]),
