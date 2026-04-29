@@ -3,10 +3,10 @@ name: NEXUS-BTC Auto Trade
 on:
   schedule:
     - cron: '0 * * * *'   # 毎時0分に実行
-  workflow_dispatch:        # 手動実行も可能
+  workflow_dispatch:
 
 permissions:
-  contents: write           # gh-pagesへのpushに必要
+  contents: write
 
 jobs:
   trade:
@@ -36,35 +36,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: models/
-          key: nexus-models-${{ github.run_number }}
+          key: nexus-models-v1   # 固定キー：毎日の再学習ワークフローが更新する
           restore-keys: nexus-models-
 
-      - name: Run Bot
+      - name: Run Bot（シグナル判定・注文のみ）
         env:
           GMO_API_KEY: ${{ secrets.GMO_API_KEY }}
           GMO_API_SECRET: ${{ secrets.GMO_API_SECRET }}
         run: python -m src.bot
 
-      - name: Save models cache
-        uses: actions/cache@v4
-        with:
-          path: models/
-          key: nexus-models-${{ github.run_number }}
-
-      - name: Deploy dashboard to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dashboard
-          keep_files: true
-
-      - name: Copy results.json to Pages
+      - name: Push results to repo
         run: |
           git config user.name "nexus-bot"
           git config user.email "bot@nexus"
-          git fetch origin gh-pages
-          git checkout gh-pages
-          cp data/results.json results.json 2>/dev/null || true
-          git add results.json
-          git diff --staged --quiet || git commit -m "update results"
-          git push origin gh-pages
+          git add data/results.json results.json data/risk_state.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "trade: update results $(date -u '+%Y-%m-%d %H:%M')"
+          git push origin main || git pull --rebase origin main && git push origin main
