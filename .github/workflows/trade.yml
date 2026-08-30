@@ -49,6 +49,8 @@ jobs:
         run: |
           git config user.name "nexus-bot"
           git config user.email "bot@nexus"
+          # results.jsonをルートにコピー（GitHub Pages用）
+          cp data/results.json results.json 2>/dev/null || true
           git add data/results.json results.json data/risk_state.json 2>/dev/null || true
           git diff --staged --quiet || git commit -m "trade: update results $(date -u '+%Y-%m-%d %H:%M')"
-          git push origin main || git pull --rebase origin main && git push origin main
+          git push origin main || (git pull --rebase origin main && git push origin main)
