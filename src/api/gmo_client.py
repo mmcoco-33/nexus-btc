@@ -53,11 +53,28 @@ class GMOClient:
     # --- Private API ---
 
     def get_account_margin(self) -> dict:
+        """証拠金残高取得（信用取引用）"""
         path = "/v1/account/margin"
         headers = self._private_headers("GET", path)
         r = requests.get(f"{self.BASE_PRIVATE}{path}", headers=headers, timeout=10)
         r.raise_for_status()
         return r.json()
+
+    def get_account_assets(self) -> dict:
+        """現物資産残高取得"""
+        path = "/v1/account/assets"
+        headers = self._private_headers("GET", path)
+        r = requests.get(f"{self.BASE_PRIVATE}{path}", headers=headers, timeout=10)
+        r.raise_for_status()
+        return r.json()
+
+    def get_jpy_balance(self) -> float:
+        """JPY現物残高を取得"""
+        resp = self.get_account_assets()
+        for item in resp.get("data", []):
+            if item.get("symbol") == "JPY":
+                return float(item.get("available", 0))
+        return 0.0
 
     def get_positions(self, symbol: str = "BTC_JPY") -> dict:
         path = f"/v1/openPositions?symbol={symbol}"

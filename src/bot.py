@@ -128,12 +128,12 @@ def run():
             log_entry["reason"] = exit_reason
             print(f"エグジット判定: {exit_reason} @ {current_price}")
 
-    # 残高取得
+    # 残高取得（現物JPY）
     balance = 0
     if api_key:
         try:
-            margin  = client.get_account_margin()
-            balance = float(margin["data"]["availableAmount"])
+            balance = client.get_jpy_balance()
+            print(f"JPY残高: ¥{balance:,.0f}")
         except Exception as e:
             print(f"残高取得エラー: {e}")
 
