@@ -80,7 +80,7 @@
 
   <script>
     async function load() {
-      const res = await fetch('results.json?t=' + Date.now());
+      const res = await fetch('./results.json?t=' + Date.now());
       if (!res.ok) return;
       const data = await res.json();
       if (!data.length) return;
