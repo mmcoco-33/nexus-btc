@@ -49,10 +49,9 @@ jobs:
         run: |
           git config user.name "nexus-bot"
           git config user.email "bot@nexus"
-          git pull --rebase origin main || true
-          cp data/results.json results.json 2>/dev/null || true
           git add data/results.json results.json data/risk_state.json 2>/dev/null || true
           git commit -m "trade: update results $(date -u '+%Y-%m-%d %H:%M')" || true
+          git pull --rebase origin main || true
           for i in 1 2 3; do
             git push origin main && break || (git pull --rebase origin main && sleep 2)
           done
