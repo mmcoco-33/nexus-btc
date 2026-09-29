@@ -48,11 +48,17 @@ def save_results(entry: dict):
     results = []
     if os.path.exists(path):
         with open(path) as f:
-            results = json.load(f)
+            try:
+                results = json.load(f)
+            except Exception:
+                results = []
     results.append(entry)
     results = results[-500:]
     with open(path, "w") as f:
-        json.dump(results, f, ensure_ascii=False, default=str)
+        json.dump(results, f, ensure_ascii=False, default=str, indent=None)
+    # ルートのresults.jsonも同時更新（GitHub Pages用）
+    with open("results.json", "w") as f:
+        json.dump(results, f, ensure_ascii=False, default=str, indent=None)
 
 
 def run():
