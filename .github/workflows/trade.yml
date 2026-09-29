@@ -52,7 +52,7 @@ jobs:
           git pull --rebase origin main || true
           cp data/results.json results.json 2>/dev/null || true
           git add data/results.json results.json data/risk_state.json 2>/dev/null || true
-          git diff --staged --quiet || git commit -m "trade: update results $(date -u '+%Y-%m-%d %H:%M')"
+          git commit -m "trade: update results $(date -u '+%Y-%m-%d %H:%M')" || true
           for i in 1 2 3; do
             git push origin main && break || (git pull --rebase origin main && sleep 2)
           done
